@@ -13,6 +13,22 @@ This repository contains the four Agentic AI course assignments. Each folder inc
 
 Assignments 2–4 share one theme, **risk in banking** (fraud, credit appraisal, transaction risk), and use a local LLM through Ollama, so case and policy details are not sent to a cloud LLM.
 
+## Workflow previews
+
+**Assignment 2 – FraudLens (LangFlow)**
+
+![FraudLens LangFlow canvas](Assignment-2-LangFlow-Fraud-Analyst-Bot/screenshots/01-flow-canvas.png)
+
+**Assignment 3 – Credit Appraisal RAG (n8n)**
+
+![Credit Appraisal RAG workflow](Assignment-3-n8n-RAG-Credit-Appraisal/screenshots/01-workflow-canvas.png)
+
+**Assignment 4 – Transaction Risk Multi-Agent System (n8n)**
+
+![Transaction Risk multi-agent workflow](Assignment-4-n8n-MAS-Transaction-Risk/screenshots/01-workflow-canvas.png)
+
+More screenshots (chat outputs, tool calls, execution logs) are in each assignment's README.
+
 ## Folder contents
 
 ```text

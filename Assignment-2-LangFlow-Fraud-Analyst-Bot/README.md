@@ -71,15 +71,27 @@ A **Tool Use** section tells the agent to search the web only for recent scams, 
 | 2 | *Follow-up:* "What if the customer confirms they changed the phone number themselves because they bought a new SIM?" | Memory: the bot revises the same case and explains the change |
 | 3 | A question about a recent scam trend in India | Tool use: the agent calls Web Search and summarises the results |
 
-## 8. Screenshots (in `screenshots/`)
+## 8. Screenshots
 
-| File | What it shows |
-|---|---|
-| `01-flow-canvas.png` | LangFlow canvas: Chat Input → Agent (with Web Search tool) → Chat Output |
-| `02-case-analysis.png` | Playground: 7-section analysis for question 1 |
-| `03-follow-up-memory.png` | Playground: follow-up answered using memory |
-| `04-web-search.png` | Playground: recent-scam question answered with the Web Search tool |
-| `05-evaluate-expression.png` | Agent calling its built-in Calculator tool (`evaluate_expression`) |
+**Figure 1 – LangFlow canvas: Chat Input → Agent (Web Search tool) → Chat Output**
+
+![Figure 1 – LangFlow canvas: Chat Input → Agent (Web Search tool) → Chat Output](screenshots/01-flow-canvas.png)
+
+**Figure 2 – 7-section fraud assessment for the card fraud case**
+
+![Figure 2 – 7-section fraud assessment for the card fraud case](screenshots/02-case-analysis.png)
+
+**Figure 3 – Follow-up question answered using chat memory**
+
+![Figure 3 – Follow-up question answered using chat memory](screenshots/03-follow-up-memory.png)
+
+**Figure 4 – Recent-scam question answered with the Web Search tool**
+
+![Figure 4 – Recent-scam question answered with the Web Search tool](screenshots/04-web-search.png)
+
+**Figure 5 – Agent calling its built-in Calculator tool (evaluate_expression)**
+
+![Figure 5 – Agent calling its built-in Calculator tool (evaluate_expression)](screenshots/05-Evaluate-Expression.png)
 
 ## 9. Outcome
 

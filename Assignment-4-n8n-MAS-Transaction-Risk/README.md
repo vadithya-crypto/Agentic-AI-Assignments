@@ -124,13 +124,19 @@ The whole pipeline ran end to end in about 10 minutes on a laptop (three sequent
 | A 68-year-old pensioner transferred ₹4.5 lakh by RTGS to a new beneficiary after a video call with someone claiming to be from the CBI | Digital-arrest scam, customer as victim; recall funds, 1930 helpline |
 | A salaried customer paid ₹1,850 for a food order on their usual card and phone in Pune | Low; CLEAR |
 
-## 8. Screenshots (in `screenshots/`)
+## 8. Screenshots
 
-| File | What it shows |
-|---|---|
-| `01-workflow-canvas.png` | Full workflow after the run: chat trigger → Agent 1 → Agent 2 → Agent 3, all green, with shared Ollama model, memory and Tavily |
-| `02-chat-final-assessment.png` | Final assessment from Agent 3 in the chat, with the execution log of all three agents |
-| `03-tavily-call.png` | Tavily Search tool call with query and results |
+**Figure 1 – Multi-agent workflow after the run: Agent 1 → Agent 2 → Agent 3**
+
+![Figure 1 – Multi-agent workflow after the run: Agent 1 → Agent 2 → Agent 3](screenshots/01-workflow-canvas.png)
+
+**Figure 2 – Final assessment from Agent 3 with the execution log of all agents**
+
+![Figure 2 – Final assessment from Agent 3 with the execution log of all agents](screenshots/02-chat-final-assesment%20.png)
+
+**Figure 3 – Tavily Search tool call made by the research agent**
+
+![Figure 3 – Tavily Search tool call made by the research agent](screenshots/03-tavily-call.png)
 
 ## 9. Why Multi-Agent
 

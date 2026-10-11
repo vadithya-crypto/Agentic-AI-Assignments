@@ -133,16 +133,31 @@ On the first run of question 2, `llama3.1` (8B) mis-computed the age at maturity
 | What is the maximum FOIR for a Car Loan? | Not available in the provided policy for Car Loan (FOIR exists only for Home Loan) |
 | What is the minimum income required for a Home Loan? | Not available in the provided policy |
 
-## 9. Screenshots (in `screenshots/`)
+## 9. Screenshots
 
-| File | What it shows |
-|---|---|
-| `01-workflow-canvas.png` | Full workflow (ingestion + chat) after a successful ingestion run |
-| `02-google-drive-download.png` | Google Drive node: credential, Download operation and the policy file selected from Drive (with the downloaded file in the output) |
-| `03-vector-store-insert.png` | Insert into Vector Store output (chunks embedded and stored) |
-| `04-chat-ltv-question.png` | Question 1 answered with the section reference |
-| `05-execution-log.png` | Agent log showing the `Credit_Policy_Search` tool call and retrieved chunks |
-| `06-chat-eligibility.png` | Question 2: condition table and ELIGIBLE verdict |
+**Figure 1 – Full workflow: ingestion from Google Drive + chat agent**
+
+![Figure 1 – Full workflow: ingestion from Google Drive + chat agent](screenshots/01-workflow-canvas.png)
+
+**Figure 2 – Google Drive node downloading the policy document**
+
+![Figure 2 – Google Drive node downloading the policy document](screenshots/02-google-drive-download.png)
+
+**Figure 3 – Policy chunks embedded and stored in the vector store**
+
+![Figure 3 – Policy chunks embedded and stored in the vector store](screenshots/03-Vector-Store-Insert.png)
+
+**Figure 4 – Policy question answered with the section reference**
+
+![Figure 4 – Policy question answered with the section reference](screenshots/04-Chat-LTV-Question.png)
+
+**Figure 5 – Execution log: Credit_Policy_Search tool call and retrieved chunks**
+
+![Figure 5 – Execution log: Credit_Policy_Search tool call and retrieved chunks](screenshots/05-Execution-Log.png)
+
+**Figure 6 – Eligibility check: condition table and ELIGIBLE verdict**
+
+![Figure 6 – Eligibility check: condition table and ELIGIBLE verdict](screenshots/06-chat-eligibility.png)
 
 ## 10. Why RAG Here
 
