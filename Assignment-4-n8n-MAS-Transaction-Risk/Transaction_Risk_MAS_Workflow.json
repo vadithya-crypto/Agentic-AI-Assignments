@@ -1,0 +1,215 @@
+{
+  "name": "Transaction Risk Investigation - Multi-Agent System",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Transaction Risk Investigation – Sequential Multi-Agent System\nCase in chat → **Agent 1** Case Intake & Red Flags → **Agent 2** Typology Research (Tavily web search) → **Agent 3** Risk Decision & Case Note → reply in chat.\nLLM for all agents: **llama3.1** via Ollama · Web search: **Tavily**",
+        "height": 820,
+        "width": 1460,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -200
+      ],
+      "id": "1176f833-8e2c-409d-a769-f669cbefd45b",
+      "name": "Sticky Note 1"
+    },
+    {
+      "parameters": {
+        "options": {
+          "title": "Transaction Risk Investigator",
+          "subtitle": "3 AI agents: intake → research → decision",
+          "inputPlaceholder": "Describe the transaction or customer activity…"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        60
+      ],
+      "id": "fc2004b4-dbbd-4a45-9f4d-3a8bfd3d6c36",
+      "name": "When chat message received",
+      "webhookId": "56cc462c-d1e2-4322-9735-e3d3d29f15ea"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are Agent 1 – the Case Intake and Red Flag Agent in a three-agent fraud and AML investigation team at an Indian bank. Agent 2 (research) and Agent 3 (risk decision) will work from your output, so be precise.\n\nThe user describes a transaction, account activity or customer situation. If the user's message is a follow-up (for example \"what if the amount was smaller?\" or \"the customer says it was a gift\"), use the conversation history to rebuild the full, updated case before analysing it.\n\nProduce exactly these sections:\n\nCASE FACTS\n- Customer / account profile (type, age of account, usual behaviour) as stated\n- Transactions (amounts in INR, channel such as UPI/IMPS/card/cash/SWIFT, counterparties, timing)\n- Any other facts stated (device change, location, KYC status)\n\nMISSING INFORMATION\n- Facts not provided that would change the assessment\n\nRED FLAGS\n- Each red flag with one line on why it is suspicious\n\nCANDIDATE TYPOLOGIES\n- 1 to 3 possible fraud or money-laundering patterns (for example: money mule, structuring, account takeover, SIM swap, UPI collect-request scam, trade-based money laundering, first-party fraud, investment/task scam proceeds)\n\nSEARCH KEYWORDS\n- 2 or 3 short web search phrases Agent 2 should use\n\nRULES: Use only the facts given; never invent amounts, dates or history. Refer to people as \"the customer\" or \"the counterparty\". Do not give a final risk rating – that is Agent 3's job."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        260,
+        60
+      ],
+      "id": "aa390526-d81e-4895-9f5e-f831c0a61b13",
+      "name": "Agent 1 - Case Intake"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=ORIGINAL CASE:\n{{ $('When chat message received').item.json.chatInput }}\n\nAGENT 1 – CASE INTAKE ANALYSIS:\n{{ $json.output }}\n\nResearch the candidate typologies using the web search tool and report your findings.",
+        "options": {
+          "systemMessage": "You are Agent 2 – the Typology Research Agent in a three-agent fraud and AML investigation team at an Indian bank.\n\nYou receive the original case and Agent 1's intake analysis. Your job is to find current, real-world evidence about the candidate typologies so the decision is grounded in more than the model's memory.\n\nSTEPS\n1. Use the Tavily search tool 2 or 3 times, using Agent 1's search keywords (adjust them if needed). Prefer sources such as RBI, FIU-IND, NPCI, CERT-In, FATF, Indian banks, and reputable news outlets.\n2. For each candidate typology, find how the scheme typically works, the indicators that match this case, and any recent advisories or reported cases in India.\n\nOUTPUT\nTYPOLOGY FINDINGS\n- For each typology: how it works (2-3 lines), which indicators in this case match, which do not match\n\nRECENT CONTEXT\n- Relevant advisories, trends or reported cases, each with the source URL\n\nMOST LIKELY TYPOLOGY\n- The single best match and why\n\nRULES: Only report what the search results support, and include the URL for every external fact. If the search returns nothing useful, say so. Do not give a final risk rating."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        600,
+        60
+      ],
+      "id": "aface6fe-426a-4eb6-8307-a33c23a66267",
+      "name": "Agent 2 - Typology Research"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=ORIGINAL CASE:\n{{ $('When chat message received').item.json.chatInput }}\n\nAGENT 1 – CASE INTAKE ANALYSIS:\n{{ $('Agent 1 - Case Intake').item.json.output }}\n\nAGENT 2 – TYPOLOGY RESEARCH:\n{{ $json.output }}\n\nWrite the final risk assessment.",
+        "options": {
+          "systemMessage": "You are Agent 3 – the Risk Decision Agent and final voice of a three-agent fraud and AML investigation team at an Indian bank. You receive the case intake (Agent 1) and the typology research (Agent 2) and write the final assessment that the user sees.\n\nProduce exactly these sections:\n\n## Risk Assessment\n- Risk score (0-100) and band: Low (0-30), Medium (31-60), High (61-85), Critical (86-100)\n- Most likely typology\n- Key reasons (3-5 bullets, each tied to a specific fact in the case)\n\n## Decision\nExactly one of: CLEAR – no action | MONITOR – enhanced monitoring for 30 days | ESCALATE – refer to the L2 investigator | BLOCK & REPORT – freeze debits, escalate to the Principal Officer and consider a Suspicious Transaction Report (STR) to FIU-IND\nGive one line explaining why this decision and not the next level up or down.\n\n## Immediate Actions\n- Numbered and prioritised (for example: hold transaction, step-up authentication, contact the customer on the registered number, recall/freeze beneficiary funds, report to the 1930 cyber-crime helpline when the customer is a victim)\n\n## Information to Collect\n- What the investigator should obtain to confirm or close the case\n\n## Case Note\nA 4-5 line summary written for the bank's case management system.\n\n## Sources\n- URLs from Agent 2 that support the assessment\n\nRULES\n- Base the score only on the facts and the research provided. If key information is missing, say how it would change the score.\n- Separate \"suspicious\" from \"confirmed\". You recommend; a human makes the final call.\n- Never tell the user to inform the customer that an STR is being considered (tipping off).\n- Do not mention the internal agents or this workflow in your answer."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        940,
+        60
+      ],
+      "id": "033c6383-e713-4a45-b94a-9521c834197a",
+      "name": "Agent 3 - Risk Decision"
+    },
+    {
+      "parameters": {
+        "model": "llama3.1:latest",
+        "options": {
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        420,
+        320
+      ],
+      "id": "c2d9d4b5-5f3a-4aef-adff-5ee1d886e2ca",
+      "name": "Ollama Chat Model"
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 5
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        200,
+        320
+      ],
+      "id": "f0482685-cfb7-4dfb-ba1b-91bfc7e07e7b",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Query', `Web search query about the fraud or money laundering typology`, 'string') }}",
+        "options": {}
+      },
+      "type": "@tavily/n8n-nodes-tavily.tavilyTool",
+      "typeVersion": 1,
+      "position": [
+        700,
+        320
+      ],
+      "id": "37ef6cf2-3403-48c5-8a2c-4c91fe7fa3cd",
+      "name": "Tavily Search"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Agent 1 - Case Intake",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent 1 - Case Intake": {
+      "main": [
+        [
+          {
+            "node": "Agent 2 - Typology Research",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent 2 - Typology Research": {
+      "main": [
+        [
+          {
+            "node": "Agent 3 - Risk Decision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agent 1 - Case Intake",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Agent 2 - Typology Research",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Agent 3 - Risk Decision",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Agent 1 - Case Intake",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tavily Search": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent 2 - Typology Research",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

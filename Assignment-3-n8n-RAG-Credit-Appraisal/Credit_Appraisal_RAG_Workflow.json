@@ -1,0 +1,343 @@
+{
+  "name": "Credit Appraisal Policy Assistant (RAG)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Part 1 – Ingest the policy from Google Drive (run once)\nClick **Execute workflow** → downloads **Credit_Appraisal_Policy_RAG_Reference.docx** from Google Drive → 600-char chunks (80 overlap) → nomic-embed-text embeddings → in-memory vector store `credit_policy`.\n\nRe-run after every n8n restart (the store lives in memory).",
+        "height": 560,
+        "width": 1000,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -60,
+        -120
+      ],
+      "id": "f4aed689-1cbd-41c5-b32f-63d50c4307aa",
+      "name": "Sticky Note 1"
+    },
+    {
+      "parameters": {
+        "content": "## Part 2 – Chat with the policy\nTwo modes: (a) policy questions, (b) eligibility check of an applicant, condition by condition.\nAnswers only from the policy; says 'not available in the provided policy' otherwise.\n\nLLM: **llama3.1** via Ollama · Embeddings: **nomic-embed-text** via Ollama",
+        "height": 620,
+        "width": 1180,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -60,
+        500
+      ],
+      "id": "3219625d-4e25-41e9-a797-923611933a12",
+      "name": "Sticky Note 2"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        60
+      ],
+      "id": "7cbe3036-fc26-4e42-928b-52b84f8a0110",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        220,
+        60
+      ],
+      "id": "f07e3e7e-199e-4355-a896-1d9ed383a6bd",
+      "name": "Download Policy from Google Drive"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "memoryKey": {
+          "__rl": true,
+          "mode": "list",
+          "value": "credit_policy"
+        },
+        "clearStore": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
+      "typeVersion": 1.3,
+      "position": [
+        460,
+        60
+      ],
+      "id": "865864eb-f862-40cf-a88f-6e24764f337b",
+      "name": "Insert into Vector Store"
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "loader": "auto",
+        "textSplittingMode": "custom",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        620,
+        260
+      ],
+      "id": "48182eb2-9465-49fa-8814-18ad73f208dc",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "chunkSize": 600,
+        "chunkOverlap": 80,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        720,
+        420
+      ],
+      "id": "93f06f7e-e0c8-47e6-b514-29d11339c8f9",
+      "name": "Recursive Text Splitter"
+    },
+    {
+      "parameters": {
+        "model": "nomic-embed-text:latest"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        420,
+        260
+      ],
+      "id": "691e9e50-4acc-411e-951e-a49149bc709f",
+      "name": "Embeddings Ollama (Ingest)"
+    },
+    {
+      "parameters": {
+        "options": {
+          "title": "Credit Appraisal Policy Assistant",
+          "subtitle": "Car Loan & Home Loan eligibility – answers only from the policy",
+          "inputPlaceholder": "e.g. What is the maximum LTV for an electric car? / Check this applicant…"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        640
+      ],
+      "id": "06219b44-08a3-4b4d-be6a-fe53f058d2f1",
+      "name": "When chat message received",
+      "webhookId": "a365989e-88ff-4593-bbcf-a330a8b04998"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are the Credit Appraisal Policy Assistant. You answer questions about Car Loan and Home Loan eligibility and check whether an applicant meets the policy.\n\nYour ONLY source of facts is the Credit Appraisal Policy, available through the Credit_Policy_Search tool.\n\nGENERAL RULES\n1. Before answering ANY question about loans or eligibility, call Credit_Policy_Search. If the result does not contain what you need, search again with different words (for example \"Car Loan bureau score\" or \"Home Loan FOIR\").\n2. Answer only from the retrieved policy text. Do not use general banking knowledge, RBI rules, or values from other banks. Never guess or estimate a value.\n3. First identify the loan product (Car Loan or Home Loan). Apply Car Loan rules only to Car Loan questions and Home Loan rules only to Home Loan questions. Never borrow a rule from the other product.\n4. If a parameter is not specified in the policy for that product, reply: \"<parameter> is not available in the provided policy for <product>.\" Do not supply a value from general knowledge afterwards.\n5. Give exact values as written in the policy (percent, months, years, score) and say which section they come from (Section 1 – Car Loan, Section 2 – Home Loan, Section 3 – Guidelines).\n\nMODE A – POLICY QUESTION\nGive the direct answer in one or two sentences with the section reference.\n\nMODE B – ELIGIBILITY CHECK (the user gives applicant or loan details)\n1. Identify the loan product. If it is not stated, ask for it.\n2. Retrieve the rules for that product only.\n3. Evaluate every condition independently in a table with columns: Condition | Policy Requirement | Applicant Value | Result (Met / Not Met / Not Provided).\n   - Age at maturity = applicant's current age + loan tenor in years (convert months to years by dividing by 12). Show the calculation.\n   - For a Car Loan, use the LTV limit that matches the vehicle type (petrol/diesel or battery electric).\n4. Deciding Met / Not Met:\n   - \"≤ X\" (maximum) → Met if the applicant value is less than or equal to X. Example: 48 ≤ 70 → Met. 36 ≤ 36 → Met. 83.33% ≤ 85% → Met.\n   - \"≥ X\" (minimum) → Met if the applicant value is greater than or equal to X. Example: 742 ≥ 700 → Met.\n   - Check each comparison twice before writing the result. A smaller number is always within a maximum limit.\n   - Worked example: age 45, tenor 36 months → 36 / 12 = 3 years → 45 + 3 = 48 → 48 ≤ 70 → Met.\n5. Final verdict: ELIGIBLE (all conditions met), NOT ELIGIBLE (list the failed conditions), or INCOMPLETE (list the missing details).\n6. If the user provides a detail the policy does not cover (for example income or employment type), say it is not assessed because it is not in the provided policy.\n\nUse the conversation history for follow-up questions such as \"what if the tenor is 30 months instead?\"."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        300,
+        640
+      ],
+      "id": "585b815a-594c-4540-b823-8eac68104f23",
+      "name": "Credit Policy Agent"
+    },
+    {
+      "parameters": {
+        "model": "llama3.1:latest",
+        "options": {
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        160,
+        880
+      ],
+      "id": "a4c25094-9105-4c38-8da7-1f29b0932af5",
+      "name": "Ollama Chat Model"
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 6
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        340,
+        880
+      ],
+      "id": "f7279347-9c11-416c-bdd6-96adc957a8de",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Searches the Credit Appraisal Policy for Car Loan and Home Loan eligibility rules: Loan-to-Value (LTV) by vehicle type, minimum bureau score, Fixed Obligations to Income Ratio (FOIR), maximum loan tenor, applicant age at maturity, and the policy application guidelines. Use it for every loan or eligibility question. Input: a short search query that names the loan product, e.g. 'Car Loan maximum tenor'.",
+        "memoryKey": {
+          "__rl": true,
+          "mode": "list",
+          "value": "credit_policy"
+        },
+        "topK": 4
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
+      "typeVersion": 1.3,
+      "position": [
+        560,
+        880
+      ],
+      "id": "80441269-b81c-48aa-8dbb-4f0e78a2639f",
+      "name": "Credit_Policy_Search"
+    },
+    {
+      "parameters": {
+        "model": "nomic-embed-text:latest"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        560,
+        1060
+      ],
+      "id": "d593e7db-f17b-437c-a035-9a8afe9f392c",
+      "name": "Embeddings Ollama (Query)"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Download Policy from Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Policy from Google Drive": {
+      "main": [
+        [
+          {
+            "node": "Insert into Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Insert into Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Ollama (Ingest)": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Insert into Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Credit Policy Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Credit Policy Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Credit Policy Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Credit_Policy_Search": {
+      "ai_tool": [
+        [
+          {
+            "node": "Credit Policy Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Ollama (Query)": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Credit_Policy_Search",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}
