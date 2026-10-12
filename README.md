@@ -15,6 +15,16 @@ Assignments 2–4 share one theme, **risk in banking** (fraud, credit appraisal,
 
 ## Workflow previews
 
+**Assignment 1 – Invoice Reminder (Zapier)**
+
+Zap 1 – daily reminder to every Pending invoice:
+
+![Zap 1 workflow](Assignment-1-Zapier-Invoice-Reminder/screenshots/02-zap1-workflow.png)
+
+Zap 2 – "Payment Done" reply marks the invoice Completed and sends an acknowledgement:
+
+![Zap 2 workflow](Assignment-1-Zapier-Invoice-Reminder/screenshots/07-zap2-workflow.png)
+
 **Assignment 2 – FraudLens (LangFlow)**
 
 ![FraudLens LangFlow canvas](Assignment-2-LangFlow-Fraud-Analyst-Bot/screenshots/01-flow-canvas.png)
