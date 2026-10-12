@@ -1,6 +1,6 @@
 # Assignment 1 – Scheduled Invoice Payment Reminders with Reply Handling (Zapier)
 
-> **Status: in progress.** The design, email templates and invoice sheet are ready; the Zaps are being built, and screenshots will be added once they have run.
+> **Status:** Zap 1 (scheduled reminder) is built, tested and published. Zap 2 (reply handling) is in progress; its screenshots will be added once it has run.
 
 ## 1. Problem Statement
 
@@ -48,20 +48,18 @@ Expected result of Zap 1: 3 reminder emails (1001, 1002, 1003); 1004 and 1005 ar
 
 ## 4. Workflow Architecture
 
-### Zap 1 – Scheduled Payment Reminder
+### Zap 1 – Scheduled Payment Reminder (built and published)
 
 ```text
-Schedule by Zapier (every day, 9:00 AM IST)
+Schedule by Zapier (every weekday, 9:00 AM IST)
         ↓
-Google Sheets – Lookup Spreadsheet Rows (Advanced)   [Status = Pending]
+Google Sheets – Lookup Spreadsheet Rows (Advanced)   [Status = Pending → 3 rows]
         ↓
 Looping by Zapier – Create Loop From Line Items      [one run per invoice]
         ↓
 Gmail – Send Email                                   [personalised reminder]
         ↓
-Formatter by Zapier – Date/Time                      [current IST timestamp]
-        ↓
-Google Sheets – Update Spreadsheet Row               [Reminder Sent On]
+Google Sheets – Update Spreadsheet Row               [Reminder Sent On = today's date]
 ```
 
 ### Zap 2 – Reply Handling and Payment Confirmation
@@ -93,12 +91,13 @@ Gmail – Reply to Email                               [acknowledgement to the s
 ### Zap 1
 | Step | App / Event | Configuration |
 |---|---|---|
-| 1 | Schedule by Zapier – Every Day | Time 9:00 AM, timezone Asia/Kolkata, trigger on weekends: No |
-| 2 | Google Sheets – Lookup Spreadsheet Rows (Advanced) | Spreadsheet: SCIT_Invoice_Tracker, Worksheet: Invoices, Lookup Column: **Status**, Lookup Value: `Pending`, Row count: 100 |
-| 3 | Looping by Zapier – Create Loop From Line Items | Values to loop: Row ID, Invoice ID, Name, Amount, Type, Account No, Bank Name, Email (all from step 2) |
-| 4 | Gmail – Send Email | To: *Loop Email*; Subject and Body from `Prompt.md` → Template 1, mapped to loop fields |
-| 5 | Formatter by Zapier – Date / Time – Format | Input: `now`, To Format: `DD/MM/YYYY HH:mm`, To Timezone: Asia/Kolkata |
-| 6 | Google Sheets – Update Spreadsheet Row | Row: *Loop Row ID*, Reminder Sent On: *output of step 5* |
+| 1 | Schedule by Zapier – Every Day | Time 9:00 AM, trigger on weekends: No |
+| 2 | Google Sheets – Lookup Spreadsheet Rows (Advanced) | Spreadsheet: SCIT_Invoice_Tracker, Worksheet: Invoices, Lookup Column: **Status**, Lookup Value: `Pending` |
+| 3 | Looping by Zapier – Create Loop From Line Items | Values to loop (step 2 returns columns by letter): `invoice` = COL B, `type` = COL C, `name` = COL D, `amount` = COL E, `account` = COL F, `bank` = COL G, `email` = COL I, `row` = Row Number |
+| 4 | Gmail – Send Email | To: *loop email*; From Name: Accounts Team; Subject and Body from `Prompt.md` → Template 1, mapped to the loop fields |
+| 5 | Google Sheets – Update Spreadsheet Row | Row: *loop row* (custom value); Reminder Sent On: *Pretty Date* from step 1; all other columns left blank so they are unchanged |
+
+**Test result:** step 2 found the 3 Pending invoices (1001, 1002, 1003) and skipped the 2 Completed ones; the loop produced 3 iterations with sheet rows 2, 3 and 4; the reminder for invoice 1001 arrived with the correct name, amount, account and bank; and row 2's *Reminder Sent On* was filled in.
 
 ### Zap 2
 | Step | App / Event | Configuration |
@@ -118,19 +117,28 @@ Gmail – Reply to Email                               [acknowledgement to the s
 2. **Zap 2:** from the recipient inbox, reply to the reminder for invoice **1001** with `Payment Done`. Within the polling interval, the sheet shows 1001 as **Completed** with today's date, and the recipient gets the acknowledgement reply.
 3. **Negative test:** reply to invoice **1002** with `Will pay next week`. The filter stops the Zap, and the status stays Pending.
 
-## 7. Screenshots (in `screenshots/`)
+## 7. Screenshots
 
-| File | What it shows |
-|---|---|
-| `01-sheet-before.png` | Invoice sheet before running (3 Pending) |
-| `02-zap1-workflow.png` | Zap 1 editor with all 6 steps |
-| `03-reminder-email.png` | A reminder email as received |
-| `04-sheet-after-zap1.png` | Reminder Sent On filled for the 3 Pending invoices |
-| `05-zap2-workflow.png` | Zap 2 editor with all 8 steps |
-| `06-payment-done-reply.png` | The "Payment Done" reply in the thread |
-| `07-sheet-after-zap2.png` | Invoice 1001 changed to Completed with a date |
-| `08-acknowledgement.png` | The automatic acknowledgement reply |
-| `09-zap-history.png` | Zap History showing successful runs |
+### Zap 1
+
+**Figure 1 – Invoice sheet before running (3 Pending invoices, date columns empty)**
+
+![Sheet before](screenshots/01-sheet-before.png)
+
+**Figure 2 – Zap 1 in the Zapier editor: Schedule → Lookup Rows → Loop → Send Email → Update Row**
+
+![Zap 1 workflow](screenshots/02-zap1-workflow.png)
+
+**Figure 3 – Reminder email received for invoice 1001**
+
+![Reminder email](screenshots/03-reminder-email.png)
+
+**Figure 4 – Sheet after Zap 1: Reminder Sent On filled in**
+
+![Sheet after Zap 1](screenshots/04-sheet-after-zap1.png)
+
+### Zap 2
+*Screenshots will be added once Zap 2 has run (reply thread, sheet updated to Completed, acknowledgement email).*
 
 ## 8. Outcome
 
