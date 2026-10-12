@@ -1,6 +1,6 @@
 # Assignment 1 – Scheduled Invoice Payment Reminders with Reply Handling (Zapier)
 
-> **Status:** Zap 1 (scheduled reminder) is built, tested and published. Zap 2 (reply handling) is in progress; its screenshots will be added once it has run.
+> **Status:** Both Zaps are built, tested and published.
 
 ## 1. Problem Statement
 
@@ -19,8 +19,8 @@ This assignment automates the full loop with Zapier:
 | Google Sheets | Invoice tracker (data source and status log) |
 | Looping by Zapier | Process each pending invoice separately |
 | Gmail | Send reminders, watch for replies, send acknowledgement |
-| Filter by Zapier | Only continue for genuine "Payment Done" replies on Pending invoices |
-| Formatter by Zapier | Extract the Invoice ID from the subject; generate the timestamp |
+| Filter by Zapier | Only continue for genuine "Payment Done" replies |
+| Formatter by Zapier | Extract the Invoice ID from the reply's subject |
 
 **LLM used:** None. This assignment is rule-based workflow automation; no language model is involved. The email text is a fixed template with dynamic fields (see `Prompt.md`).
 
@@ -62,7 +62,7 @@ Gmail – Send Email                                   [personalised reminder]
 Google Sheets – Update Spreadsheet Row               [Reminder Sent On = today's date]
 ```
 
-### Zap 2 – Reply Handling and Payment Confirmation
+### Zap 2 – Reply Handling and Payment Confirmation (built and published)
 
 ```text
 Gmail – New Email Matching Search                    [replies to reminders]
@@ -73,13 +73,9 @@ Formatter by Zapier – Text – Extract Pattern         [Invoice ID from subjec
         ↓
 Google Sheets – Lookup Spreadsheet Row               [find the invoice]
         ↓
-Filter by Zapier                                     [Status is still Pending]
-        ↓
-Formatter by Zapier – Date/Time                      [current IST timestamp]
-        ↓
 Google Sheets – Update Spreadsheet Row               [Status = Completed, Payment Confirmed On]
         ↓
-Gmail – Reply to Email                               [acknowledgement to the sender]
+Gmail – Reply to Email                               [acknowledgement in the same thread]
 ```
 
 ## 5. Step-by-Step Build
@@ -102,14 +98,16 @@ Gmail – Reply to Email                               [acknowledgement to the s
 ### Zap 2
 | Step | App / Event | Configuration |
 |---|---|---|
-| 1 | Gmail – New Email Matching Search | Search string: `subject:"Payment Reminder - Invoice" -from:me` |
+| 1 | Gmail – New Email Matching Search | Search string: `subject:"Payment Reminder - Invoice" -from:me` (only replies to our reminders, never our own sent mail) |
 | 2 | Filter by Zapier | Only continue if *Body Plain* (Text) **contains** `Payment Done` |
-| 3 | Formatter by Zapier – Text – Extract Pattern | Input: *Subject*, Pattern: `Invoice\s*(\d+)` → output `0` is the Invoice ID |
-| 4 | Google Sheets – Lookup Spreadsheet Row | Lookup Column: **Invoice ID**, Lookup Value: *output of step 3* |
-| 5 | Filter by Zapier | Only continue if *Status* (from step 4) **exactly matches** `Pending` (prevents double processing) |
-| 6 | Formatter by Zapier – Date / Time – Format | Input: `now`, To Format: `DD/MM/YYYY`, To Timezone: Asia/Kolkata |
-| 7 | Google Sheets – Update Spreadsheet Row | Row: *Row ID from step 4*, Status: `Completed`, Payment Confirmed On: *output of step 6* |
-| 8 | Gmail – Reply to Email | Thread: *Thread ID from step 1*, Body from `Prompt.md` → Template 2 |
+| 3 | Formatter by Zapier – Text – Extract Pattern | Input: *Subject*, Pattern: `Invoice\s*(\d+)` → output `0` = `1001` |
+| 4 | Google Sheets – Lookup Spreadsheet Row | Lookup Column: **Invoice ID**, Lookup Value: *output 0 of step 3* |
+| 5 | Google Sheets – Update Spreadsheet Row | Row: *Row from step 4* (custom value); Status: `Completed`; Payment Confirmed On: *Date of the reply from step 1* |
+| 6 | Gmail – Reply to Email | Thread: *Thread ID from step 1*; To: *From Email from step 1*; From Name: Accounts Team; Body from `Prompt.md` → Template 2, mapped to the step 4 fields |
+
+**Test result:** the "Payment Done" reply to the invoice 1001 reminder passed the filter; the Invoice ID 1001 was extracted from "Re: Payment Reminder - Invoice 1001"; row 2 was found and updated to **Completed** with the confirmation date; and the acknowledgement arrived in the same email thread.
+
+> Simplified from the original 8-step design: a second filter ("Status is still Pending") and a separate date Formatter were not needed, because the reply's own date is used and a completed invoice receives no further reminders from Zap 1.
 
 ## 6. Testing
 
@@ -138,7 +136,22 @@ Gmail – Reply to Email                               [acknowledgement to the s
 ![Sheet after Zap 1](screenshots/04-sheet-after-zap1.png)
 
 ### Zap 2
-*Screenshots will be added once Zap 2 has run (reply thread, sheet updated to Completed, acknowledgement email).*
+
+**Figure 5 – Customer replies "Payment Done" to the reminder**
+
+![Payment Done reply](screenshots/05-payment-done-reply.png)
+
+**Figure 6 – Sheet after Zap 2: invoice 1001 marked Completed with the confirmation date**
+
+![Sheet after Zap 2](screenshots/06-sheet-after-zap2.png)
+
+**Figure 7 – Zap 2 in the Zapier editor: Gmail search → Filter → Extract Invoice ID → Lookup Row → Update Row → Reply**
+
+![Zap 2 workflow](screenshots/07-zap2-workflow.png)
+
+**Figure 8 – Automatic acknowledgement received in the same thread**
+
+![Acknowledgement](screenshots/08-acknowledgement.png)
 
 ## 8. Outcome
 

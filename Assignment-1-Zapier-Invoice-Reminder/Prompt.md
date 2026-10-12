@@ -36,7 +36,7 @@ Accounts Team
 ```text
 Dear {{Name}},
 
-Thank you. We have recorded your payment for Invoice {{Invoice ID}} of Rs. {{Amount}}. The invoice status has been updated to Completed on {{Payment Confirmed On}}.
+Thank you. We have recorded your payment for Invoice {{Invoice ID}} of Rs. {{Amount}}. The invoice status has been updated to Completed.
 
 Regards,
 Accounts Team
@@ -50,4 +50,3 @@ Accounts Team
 | Zap 2, Gmail search | `subject:"Payment Reminder - Invoice" -from:me` | Only replies to our reminders, not our own sent mail |
 | Zap 2, Filter 1 | Body contains `Payment Done` (case-insensitive) | Ignore replies such as "will pay next week" |
 | Zap 2, Extract Pattern | `Invoice\s*(\d+)` on Subject | Pulls `1001` out of `Re: Payment Reminder - Invoice 1001` |
-| Zap 2, Filter 2 | Status exactly matches `Pending` | Don't re-process an invoice that is already Completed |

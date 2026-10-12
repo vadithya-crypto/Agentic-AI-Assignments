@@ -6,7 +6,7 @@ This repository contains the four Agentic AI course assignments. Each folder inc
 
 | # | Assignment | Use case | Platform | LLM | Status |
 |---|---|---|---|---|---|
-| 1 | [Zapier – scheduled mail + reply handling](Assignment-1-Zapier-Invoice-Reminder) | Daily invoice payment reminders; "Payment Done" replies automatically mark the invoice Completed and send an acknowledgement | Zapier, Google Sheets, Gmail | None (rule-based automation) | Zap 1 done · Zap 2 in progress |
+| 1 | [Zapier – scheduled mail + reply handling](Assignment-1-Zapier-Invoice-Reminder) | Daily invoice payment reminders; "Payment Done" replies automatically mark the invoice Completed and send an acknowledgement | Zapier, Google Sheets, Gmail | None (rule-based automation) | Done |
 | 2 | [LangFlow – smart bot](Assignment-2-LangFlow-Fraud-Analyst-Bot) | **FraudLens:** fraud risk analyst agent with a 7-section case assessment, chat memory and a web search tool | LangFlow | `llama3.2` via Ollama | Done |
 | 3 | [n8n + RAG](Assignment-3-n8n-RAG-Credit-Appraisal) | Credit appraisal assistant on the class policy document (loaded from Google Drive): answers Car/Home Loan policy questions and checks applicant eligibility condition by condition | n8n, Google Drive | `llama3.1` + `nomic-embed-text` via Ollama | Done |
 | 4 | [n8n + Multi-Agent System](Assignment-4-n8n-MAS-Transaction-Risk) | 3-agent transaction risk investigation: intake → web research (Tavily) → risk decision | n8n, Tavily | `llama3.1` via Ollama | Done |
